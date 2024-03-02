@@ -4,62 +4,109 @@ import java.io.*;
 import java.util.*;
 
 class Solution {
-    static Character[] location = {'d', 'l', 'r', 'u'};
-    static char[][] campus;
-    static String result = "impossible";
-    static int[] dy = {0, -1, 1, 0};
-    static int[] dx = {1, 0, 0, -1};
-    static int N, M, X, Y, R, C, K;
+    public static ArrayList<String> result;
+    public static int[] parent;
 
+    public static String[] solution(String[] commands) {
+        parent = new int[2500];
+        result = new ArrayList<>();
 
-    public static String solution(int n, int m, int x, int y, int r, int c, int k) {
+        String[] table = new String[2500];
 
-        campus = new char[n][m];
-        N = n;
-        M = m;
-        Y = y - 1;
-        X = x - 1;
-        R = r - 1;
-        C = c - 1;
-        K = k;
-
-        if (y == c && x == r) return "";
-        if (!isAvailable(X, Y, 0)) return result;
-
-        dfs(X, Y, 0, "");
-
-        return result;
-    }
-
-    public static boolean isAvailable(int x, int y, int cnt) {
-        int remainMoves = K - cnt;
-        int distanceToGoal = Math.abs(R - x) + Math.abs(C - y);
-
-        return remainMoves >= distanceToGoal && ((remainMoves - distanceToGoal) % 2 == 0);
-    }
-
-    public static boolean dfs(int x, int y, int cnt, String str) {
-        if(!isAvailable(x, y, cnt)) return false;
-
-        if (cnt == K) {
-            if (x == R && y == C) {
-                result = str;
-                return true;
-            }
-            return false;
+        for (int i = 0; i < 2500; i++) {
+            parent[i] = i;
+            table[i] = "";
         }
 
-        for (int i = 0; i < 4; i++) {
-            int fx = x + dx[i];
-            int fy = y + dy[i];
+        for (int i = 0; i < commands.length; i++) {
+            StringTokenizer st = new StringTokenizer(commands[i]);
+            String command = st.nextToken();
+            if (command.equals("UPDATE")) {
+                if (st.countTokens() == 2) {
+                    String value = st.nextToken();
+                    String change = st.nextToken();
+                    for (int j = 0; j < table.length; j++) {
+                        if (table[j].equals(value)) {
+                            table[j] = change;
+                        }
+                    }
+                } else {
+                    int r = Integer.parseInt(st.nextToken());
+                    int c = Integer.parseInt(st.nextToken());
+                    String value = st.nextToken();
+                    int root = find(changeIndex(r, c));
+                    for (int j = 0; j < table.length; j++) {
+                        if (find(j) == root) {
+                            table[j] = value;
+                        }
+                    }
+                }
+            } else if (command.equals("MERGE")) {
+                int r1 = Integer.parseInt(st.nextToken());
+                int c1 = Integer.parseInt(st.nextToken());
+                int r2 = Integer.parseInt(st.nextToken());
+                int c2 = Integer.parseInt(st.nextToken());
+                int root1 = find(changeIndex(r1, c1));
+                int root2 = find(changeIndex(r2, c2));
 
-            if (fy < 0 || fx < 0 || fx >= N || fy >= M) continue;
+                String value = table[root1].equals("") ? table[root2] : table[root1];
 
-            if (dfs(fx, fy, cnt + 1, str + location[i])) {
-                return true;
+                if (root1 == root2) {
+                    continue;
+                }
+
+                union(root1, root2);
+
+                for (int j = 0; j < 2500; j++) {
+                    if (find(j) == root2) {
+                        table[j] = table[root1];
+                        parent[j] = root1;
+                    }
+                }
+
+                table[changeIndex(r1, c1)] = value;
+                table[changeIndex(r2, c2)] = value;
+            } else if (command.equals("UNMERGE")) {
+                int r1 = Integer.parseInt(st.nextToken());
+                int c1 = Integer.parseInt(st.nextToken());
+                int root = find(changeIndex(r1, c1));
+
+                String value = table[root];
+                for (int j = 0; j < 2500; j++) {
+                    if (find(j) == root) {
+                        table[j] = "";
+                        parent[j] = j;
+                    }
+                }
+                if (value != null)
+                    table[changeIndex(r1, c1)] = value;
+            } else {
+                int r = Integer.parseInt(st.nextToken());
+                int c = Integer.parseInt(st.nextToken());
+
+                int root = find(changeIndex(r, c));
+                String rs = table[root];
+                result.add(Objects.equals(rs, "") ? "EMPTY" : rs);
             }
         }
+        return result.toArray(new String[0]);
+    }
 
-        return false;
+    public static int find(int a) {
+        if (parent[a] == a)
+            return a;
+        else
+            return parent[a] = find(parent[a]);
+    }
+
+    public static void union(int a, int b) {
+        a = find(a);
+        b = find(b);
+        if (a != b)
+            parent[b] = a;
+    }
+
+    public static int changeIndex(int r, int c) {
+        return (r - 1) * 50 + (c - 1);
     }
 }

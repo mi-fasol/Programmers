@@ -2,67 +2,64 @@ package org.example;
 
 import java.io.*;
 import java.util.*;
+
 class Solution {
-    static int[] result;
+    static Character[] location = {'d', 'l', 'r', 'u'};
+    static char[][] campus;
+    static String result = "impossible";
+    static int[] dy = {0, -1, 1, 0};
+    static int[] dx = {1, 0, 0, -1};
+    static int N, M, X, Y, R, C, K;
 
-    public static int[] solution(long[] numbers) {
 
-        result = new int[numbers.length];
+    public static String solution(int n, int m, int x, int y, int r, int c, int k) {
 
-        for (int i = 0; i < numbers.length; i++) {
-            StringBuilder sb = new StringBuilder();
-            String binaryValue = Long.toBinaryString(numbers[i]);
-            if (!binaryValue.contains("0")) {
-                result[i] = 1;
-                continue;
-            }
-            if (binaryValue.length() == 1) {
-                if (numbers[i] == 0) result[i] = 0;
-                continue;
-            } else{
-                binaryValue = makeTree(binaryValue);
-            }
-            sb.append(binaryValue);
+        campus = new char[n][m];
+        N = n;
+        M = m;
+        Y = y - 1;
+        X = x - 1;
+        R = r - 1;
+        C = c - 1;
+        K = k;
 
-            binaryValue = sb.toString();
+        if (y == c && x == r) return "";
+        if (!isAvailable(X, Y, 0)) return result;
 
-            result[i] = isUnavailable(binaryValue, 0, binaryValue.length() - 1) ? 0 : 1;
-        }
+        dfs(X, Y, 0, "");
 
         return result;
     }
 
-    public static boolean isUnavailable(String binaryValue, int start, int end) {
-        if (start > end || start == end) {
-            return false;
-        }
+    public static boolean isAvailable(int x, int y, int cnt) {
+        int remainMoves = K - cnt;
+        int distanceToGoal = Math.abs(R - x) + Math.abs(C - y);
 
-        int root = (start + end) / 2;
+        return remainMoves >= distanceToGoal && ((remainMoves - distanceToGoal) % 2 == 0);
+    }
 
-        if (binaryValue.charAt(root) == '0') {
-            for(int i = start; i <= end; i++) {
-                if(binaryValue.charAt(i) == '1') return true;
+    public static boolean dfs(int x, int y, int cnt, String str) {
+        if(!isAvailable(x, y, cnt)) return false;
+
+        if (cnt == K) {
+            if (x == R && y == C) {
+                result = str;
+                return true;
             }
             return false;
         }
 
-        boolean left = isUnavailable(binaryValue, start, root - 1);
+        for (int i = 0; i < 4; i++) {
+            int fx = x + dx[i];
+            int fy = y + dy[i];
 
+            if (fy < 0 || fx < 0 || fx >= N || fy >= M) continue;
 
-        boolean right = isUnavailable(binaryValue, root + 1, end);
-
-        return left || right;
-    }
-
-    public static String makeTree(String value){
-        int treeLength = 1;
-        while(value.length() > treeLength){
-            treeLength = treeLength * 2 + 1;
+            if (dfs(fx, fy, cnt + 1, str + location[i])) {
+                return true;
+            }
         }
 
-        int zeroLength = treeLength - value.length();
-        StringBuilder sb = new StringBuilder();
-        sb.append("0".repeat(zeroLength));
-        return sb.append(value).toString();
+        return false;
     }
 }

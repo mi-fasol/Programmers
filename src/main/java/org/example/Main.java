@@ -4,44 +4,64 @@ import java.io.*;
 import java.util.*;
 
 class Solution {
-    public static int[] discount = {10, 20, 30, 40};
-    public static ArrayList<int[]> res;
+    public static ArrayList<Integer> solution(String today, String[] terms, String[] privacies) {
+        ArrayList<Integer> result = new ArrayList<>();
 
-    public static int[] solution(int[][] users, int[] emoticons) {
-        res = new ArrayList<>();
+        HashMap<Character, Integer> termMap = new HashMap<>();
 
-        res.add(new int[]{0, 0});
+        for (String term : terms) {
+            StringTokenizer st = new StringTokenizer(term);
 
-        dfs(users, emoticons, new int[emoticons.length], 0);
+            char type = st.nextToken().charAt(0);
+            int value = Integer.parseInt(st.nextToken());간
 
-        Collections.sort(res, (a, b) -> b[0] - a[0] == 0 ? b[1] - a[1] : b[0] - a[0]);
-        return res.get(0);
-    }
+            termMap.put(type, value);
+        }
 
-    public static void dfs(int[][] user, int[] emoticon, int[] dis, int cnt) {
-        if (cnt == emoticon.length) {
-            int plusUser = 0;
-            int emoticonSelling = 0;
+        String todayDate = today.split("\\.")[0] + today.split("\\.")[1] + today.split("\\.")[2];
 
-            for (int i = 0; i < user.length; i++) {
-                int sum = 0;
-                for (int j = 0; j < emoticon.length; j++) {
-                    if (dis[j] >= user[i][0])
-                        sum += emoticon[j] / 100 * (100 - dis[j]);
-                }
-                if (sum >= user[i][1]) {
-                    plusUser++;
-                } else {
-                    emoticonSelling += sum;
+        int deadline = Integer.parseInt(todayDate);
+
+        System.out.println(deadline);
+
+        for (int i = 0; i < privacies.length; i++) {
+            StringTokenizer st = new StringTokenizer(privacies[i]);
+
+            String date = st.nextToken();
+
+            int year = Integer.parseInt(date.split("\\.")[0]);
+            int month = Integer.parseInt(date.split("\\.")[1]);
+            int day = Integer.parseInt(date.split("\\.")[2]);
+
+            char type = st.nextToken().charAt(0);
+
+            month += termMap.get(type);
+
+            if (month > 12) {
+                year += month / 12;
+                month = month % 12;
+
+                if (month == 0) {
+                    month = 12;
+                    year -= 1;
                 }
             }
-            res.add(new int[]{plusUser, emoticonSelling});
-            return;
-        } else {
-            for (int i = 0; i < 4; i++) {
-                dis[cnt] = discount[i];
-                dfs(user, emoticon, dis, cnt + 1);
+
+            String m = month < 10 ? "0" + month : month + "";
+            String d = day < 10 ? "0" + day : day + "";
+
+            String deadlineDate = year + "" + m + d;
+
+            System.out.println(deadlineDate);
+
+
+            int dday = Integer.parseInt(deadlineDate);
+
+            if (deadline - dday >= 0) {
+                result.add(i + 1);
             }
         }
+
+        return result;
     }
 }

@@ -4,64 +4,32 @@ import java.io.*;
 import java.util.*;
 
 class Solution {
-    public static ArrayList<Integer> solution(String today, String[] terms, String[] privacies) {
-        ArrayList<Integer> result = new ArrayList<>();
+    static char[] typeList = {'R', 'T', 'C', 'F', 'J', 'M', 'A', 'N'};
 
-        HashMap<Character, Integer> termMap = new HashMap<>();
+    public static String solution(String[] survey, int[] choices) {
+        StringBuilder result = new StringBuilder();
 
-        for (String term : terms) {
-            StringTokenizer st = new StringTokenizer(term);
+        HashMap<Character, Integer> map = new HashMap<>();
 
-            char type = st.nextToken().charAt(0);
-            int value = Integer.parseInt(st.nextToken());간
-
-            termMap.put(type, value);
+        for (char i : typeList) {
+            map.put(i, 0);
         }
 
-        String todayDate = today.split("\\.")[0] + today.split("\\.")[1] + today.split("\\.")[2];
+        for (int i = 0; i < survey.length; i++) {
+            char[] surveyChar = survey[i].toCharArray();
+            if (choices[i] < 4) map.put(surveyChar[0], map.get(surveyChar[0]) + (4 - choices[i]));
+            else if (choices[i] > 4) map.put(surveyChar[1], map.get(surveyChar[1]) + (choices[i] - 4));
+            else continue;
+        }
 
-        int deadline = Integer.parseInt(todayDate);
-
-        System.out.println(deadline);
-
-        for (int i = 0; i < privacies.length; i++) {
-            StringTokenizer st = new StringTokenizer(privacies[i]);
-
-            String date = st.nextToken();
-
-            int year = Integer.parseInt(date.split("\\.")[0]);
-            int month = Integer.parseInt(date.split("\\.")[1]);
-            int day = Integer.parseInt(date.split("\\.")[2]);
-
-            char type = st.nextToken().charAt(0);
-
-            month += termMap.get(type);
-
-            if (month > 12) {
-                year += month / 12;
-                month = month % 12;
-
-                if (month == 0) {
-                    month = 12;
-                    year -= 1;
-                }
-            }
-
-            String m = month < 10 ? "0" + month : month + "";
-            String d = day < 10 ? "0" + day : day + "";
-
-            String deadlineDate = year + "" + m + d;
-
-            System.out.println(deadlineDate);
-
-
-            int dday = Integer.parseInt(deadlineDate);
-
-            if (deadline - dday >= 0) {
-                result.add(i + 1);
+        for(int i = 0; i <4; i++){
+            if(map.get(typeList[i*2]) < map.get(typeList[i*2 + 1])){
+                result.append(typeList[i * 2 + 1]);
+            } else{
+                result.append(typeList[i * 2]);
             }
         }
 
-        return result;
+        return result.toString();
     }
 }

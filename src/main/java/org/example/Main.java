@@ -1,55 +1,40 @@
 package org.example;
 
-import java.io.;
-import java.util.;
+import java.io.*;
+import java.util.*;
 
 class Solution {
-    public static int solution(int[] queue1, int[] queue2) {
-        int result = 0;
+    public static int[] solution(String[] id_list, String[] report, int k) {
+        int[] result = new int[id_list.length];
+        int[] reportedCount = new int[id_list.length];
+        HashMap<String, List<String>> reportMap = new HashMap<>();
 
-        Deque<Long> q1 = new ArrayDeque<>();
-        Deque<Long> q2 = new ArrayDeque<>();
+        for (String s : report) {
+            StringTokenizer st = new StringTokenizer(s);
 
-        long q1Sum = 0;
-        long q2Sum = 0;
+            String whoReport = st.nextToken();
+            String whoReported = st.nextToken();
 
-        for (int queue : queue1) {
-            q1.add((long) queue);
-            q1Sum += queue;
-        }
-
-        long size = q1.size();
-
-        for (int queue : queue2) {
-            q2.add((long) queue);
-            q2Sum += queue;
-        }
-
-        while (q1Sum != q2Sum) {
-
-            result++;
-
-            if (q1Sum > q2Sum) {
-                long next = q1.poll();
-                q1Sum -= next;
-                q2Sum += next;
-                q2.offer(next);
+            if (reportMap.containsKey(whoReport) && reportMap.get(whoReport).contains(whoReported)) {
+                continue;
+            } else if (reportMap.containsKey(whoReport)) {
+                reportMap.get(whoReport).add(whoReported);
             } else {
-                long next = q2.poll();
-                q2Sum -= next;
-                q1Sum += next;
-                q1.offer(next);
+                reportMap.put(whoReport, new ArrayList<>());
+                reportMap.get(whoReport).add(whoReported);
             }
+            int idx = Arrays.asList(id_list).indexOf(whoReported);
+            reportedCount[idx]++;
+        }
 
-            if (q1Sum == q2Sum) {
-                break;
+        for(int i = 0; i < id_list.length; i++){
+            if (reportedCount[i] >= k){
+                for(int j = 0; j < id_list.length; j++){
+                    if(reportMap.containsKey(id_list[j]) && reportMap.get(id_list[j]).contains(id_list[i])){
+                        result[j]++;
+                    }
+                }
             }
-
-            if (result > size * 4) {
-                result = -1;
-                break;
-            }
-
         }
 
         return result;

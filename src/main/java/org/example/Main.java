@@ -4,62 +4,30 @@ import java.io.*;
 import java.util.*;
 
 class Solution {
-    public static int[] solution(int[] fees, String[] records) {
+    public static int solution(int n, int k) {
+        int result = 0;
 
-        HashMap<String, Integer> carList = new HashMap<>();
-        HashMap<String, Integer> feeList = new HashMap<>();
+        String base = Integer.toString(n, k);
 
-        int defaultMinute = fees[0];
-        int defaultFee = fees[1];
-        int extraMinute = fees[2];
-        int extraFee = fees[3];
+        String[] split = base.split("0");
 
-
-        for (String record : records) {
-            StringTokenizer st = new StringTokenizer(record);
-            String time = st.nextToken();
-            String carNumber = st.nextToken();
-            String inOut = st.nextToken();
-
-            int hour = Integer.parseInt(time.split(":")[0]);
-            int minute = Integer.parseInt(time.split(":")[1]);
-
-            int recordTime = hour * 60 + minute;
-
-            if (Objects.equals(inOut, "IN")) {
-                carList.put(carNumber, recordTime);
-            } else {
-                int inTime = carList.get(carNumber);
-                int feeTime = recordTime - inTime;
-                if (feeList.containsKey(carNumber)) {
-                    feeTime += feeList.get(carNumber);
+        for(String s : split){
+            if(!s.equals("1") && !s.equals("")){
+                Long number = Long.parseLong(s);
+                if(IsPrimeNumber(number)){
+                    result++;
                 }
-                feeList.put(carNumber, feeTime);
-                carList.remove(carNumber);
             }
         }
+        return result;
+    }
 
-        if (!carList.isEmpty()) {
-            for (String carNumber : carList.keySet()) {
-                int inTime = carList.get(carNumber);
-                int time = 1439 - inTime;
-                if (feeList.containsKey(carNumber)) {
-                    time += feeList.get(carNumber);
-                }
-                feeList.put(carNumber, time);
-            }
+    public static boolean IsPrimeNumber(Long number) {
+        double sqrtNumber = Math.sqrt(number);
+        for (int i = 2; i <= sqrtNumber; ++i) {
+            if (number % i == 0)
+                return false;
         }
-
-        for (String car : feeList.keySet()) {
-            int parkingTime = feeList.get(car);
-
-            if (parkingTime <= defaultMinute) feeList.put(car, defaultFee);
-            else {
-                int totalFee = defaultFee + ((int) (Math.ceil((double) (parkingTime - defaultMinute) / extraMinute)) * extraFee);
-                feeList.put(car,totalFee);
-            }
-        }
-
-        return feeList.keySet().stream().sorted().mapToInt(feeList::get).toArray();
+        return true;
     }
 }

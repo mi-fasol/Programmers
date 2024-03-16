@@ -4,30 +4,35 @@ import java.io.*;
 import java.util.*;
 
 class Solution {
-    public static int solution(int n, int k) {
-        int result = 0;
+    public static List<List<Integer>> graph = new ArrayList<>();
 
-        String base = Integer.toString(n, k);
-
-        String[] split = base.split("0");
-
-        for(String s : split){
-            if(!s.equals("1") && !s.equals("")){
-                Long number = Long.parseLong(s);
-                if(IsPrimeNumber(number)){
-                    result++;
-                }
-            }
+    public static int solution(int[] info, int[][] edges) {
+        int nodeLength = info.length;
+        for(int i=0;i<nodeLength;i++){
+            graph.add(new ArrayList<>());
         }
-        return result;
+
+        for (int[] edge : edges) {
+            graph.get(edge[0]).add(edge[1]);
+        }
+
+        List<Integer> nextNodes = new ArrayList<>(graph.get(0));
+        return dfs(0, 0, 0, nextNodes,info);
     }
 
-    public static boolean IsPrimeNumber(Long number) {
-        double sqrtNumber = Math.sqrt(number);
-        for (int i = 2; i <= sqrtNumber; ++i) {
-            if (number % i == 0)
-                return false;
+    public static int dfs(int sheep, int wolf, int curNode, List<Integer> nextNodes, int[] info){
+        if(info[curNode] == 0) sheep++;
+        else wolf++;
+
+        int ans = sheep;
+        if(sheep <= wolf) return ans;
+        for(int i=0;i<nextNodes.size();i++){
+            int nextNode = nextNodes.get(i);
+            List<Integer> stackNodes = new ArrayList<>(nextNodes);
+            stackNodes.remove((Integer)nextNode);
+            stackNodes.addAll(graph.get(nextNode));
+            ans = Math.max(ans, dfs(sheep, wolf, nextNode, stackNodes, info));
         }
-        return true;
+        return ans;
     }
 }

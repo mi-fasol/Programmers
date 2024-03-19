@@ -4,35 +4,44 @@ import java.io.*;
 import java.util.*;
 
 class Solution {
-    public static List<List<Integer>> graph = new ArrayList<>();
+    public static int solution(int[][] board, int[][] skill) {
+        int answer = 0;
 
-    public static int solution(int[] info, int[][] edges) {
-        int nodeLength = info.length;
-        for(int i=0;i<nodeLength;i++){
-            graph.add(new ArrayList<>());
+        int[] degreeList = new int[board.length*board[0].length + 1];
+
+        for(int i = 0; i< board.length; i++){
+            System.arraycopy(board[i], 0, degreeList, i * board[0].length, board[i].length);
         }
 
-        for (int[] edge : edges) {
-            graph.get(edge[0]).add(edge[1]);
+        for (int[] ints : skill) {
+            int type = ints[0];
+            int r1 = ints[1];
+            int c1 = ints[2];
+            int r2 = ints[3];
+            int c2 = ints[4];
+            int degree = ints[5];
+
+            if (type == 1) {
+                degree *= -1;
+            }
+
+
+            for (int j = r1; j <= r2; j++) {
+                for (int k = c1; k <= c2; k++) {
+                    int index = j * board[0].length + k;
+                    degreeList[index] += degree;
+                }
+            }
         }
 
-        List<Integer> nextNodes = new ArrayList<>(graph.get(0));
-        return dfs(0, 0, 0, nextNodes,info);
-    }
+        degreeList[board.length*board[0].length] = 0;
 
-    public static int dfs(int sheep, int wolf, int curNode, List<Integer> nextNodes, int[] info){
-        if(info[curNode] == 0) sheep++;
-        else wolf++;
-
-        int ans = sheep;
-        if(sheep <= wolf) return ans;
-        for(int i=0;i<nextNodes.size();i++){
-            int nextNode = nextNodes.get(i);
-            List<Integer> stackNodes = new ArrayList<>(nextNodes);
-            stackNodes.remove((Integer)nextNode);
-            stackNodes.addAll(graph.get(nextNode));
-            ans = Math.max(ans, dfs(sheep, wolf, nextNode, stackNodes, info));
+        for (int j : degreeList) {
+            if (j > 0) {
+                answer++;
+            }
         }
-        return ans;
+
+        return answer;
     }
 }

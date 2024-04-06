@@ -4,79 +4,67 @@ import java.io.*;
 import java.util.*;
 
 class Solution {
-    public static char[][] map;
-    public static boolean lever = false;
-    public static int[] dx = {0, 1, 0, -1};
-    public static int[] dy = {1, 0, -1, 0};
-    public static boolean[][] visited;
-    public static int CNT, ANSWER;
-    public static int N, M, LX, LY;
+    static int X, Y;
+    static int CNT = Integer.MAX_VALUE;
+    static int[] dx = {-1, 1, 0, 0};
+    static int[] dy = {0, 0, -1, 1};
+    static char[][] map;
+    static boolean[][] visited;
 
-    public static int solution(String[] maps) {
-        N = maps.length;
-        M = maps[0].length();
+    public static int solution(String[] board) {
 
-        map = new char[maps.length][maps[0].length()];
-        visited = new boolean[maps.length][maps[0].length()];
-        CNT = ANSWER = Integer.MAX_VALUE;
+        map = new char[board.length][board[0].length()];
+        visited = new boolean[board.length][board[0].length()];
 
-        int x = 0;
-        int y = 0;
-
-        for (int i = 0; i < maps.length; i++) {
-            for (int j = 0; j < maps[i].length(); j++) {
-                map[i][j] = maps[i].charAt(j);
-                if (map[i][j] == 'S') {
-                    x = i;
-                    y = j;
-                }
+        for (int i = 0; i < board.length; i++) {
+            map[i] = board[i].toCharArray();
+            if (board[i].contains("R")) {
+                X = i;
+                Y = board[i].indexOf("R");
             }
         }
 
-        leverBfs(x, y, -1);
+        bfs(X, Y);
 
-        if(CNT != Integer.MAX_VALUE) {
-            visited = new boolean[maps.length][maps[0].length()];
-            leverBfs(LX, LY, CNT-1);
-        }
-
-        return ANSWER == Integer.MAX_VALUE ? -1 : ANSWER;
+        return CNT == Integer.MAX_VALUE ? -1 : CNT;
     }
 
-    public static void leverBfs(int x, int y, int count) {
-        Queue<int[]> queue = new LinkedList<>();
-        queue.offer(new int[]{x, y});
+    public static void bfs(int x, int y) {
+        Queue<int[]> q = new LinkedList<>();
+        q.offer(new int[]{x, y});
         visited[x][y] = true;
+        int cnt = -1;
+        while (!q.isEmpty()) {
+            cnt++;
+            int size = q.size();
 
-        while (!queue.isEmpty()) {
-            count++;
-            int size = queue.size();
-            for (int step = 0; step < size; step++) {
-                int[] now = queue.poll();
+            for (int j = 0; j < size; j++) {
+                int[] cur = q.poll();
 
-                int a = now[0];
-                int b = now[1];
+                int cx = cur[0];
+                int cy = cur[1];
 
-                visited[a][b] = true;
-
-                if (map[a][b] == 'L' && !lever) {
-                    CNT = Math.min(CNT, count);
-                    lever = true;
-                    LX = a;
-                    LY = b;
-                    return;
-                } else if (map[a][b] == 'E' && lever) {
-                    ANSWER = Math.min(ANSWER, count);
-                    return;
+                if (map[cx][cy] == 'G') {
+                    CNT = Math.min(CNT, cnt);
+                    break;
                 }
-                for (int i = 0; i < 4; i++) {
-                    int fx = a + dx[i];
-                    int fy = b + dy[i];
 
-                    if (fx >= 0 && fy >= 0 && fx < N && fy < M && !visited[fx][fy] && map[fx][fy] != 'X') {
-                        queue.offer(new int[]{fx, fy});
-                        visited[fx][fy] = true;
+                for (int i = 0; i < 4; i++) {
+                    int nx = cx;
+                    int ny = cy;
+
+                    while (nx >= 0 && ny >= 0 && nx < map.length && ny < map[0].length && map[nx][ny] != 'D') {
+                        nx += dx[i];
+                        ny += dy[i];
                     }
+
+                    nx -= dx[i];
+                    ny -= dy[i];
+
+                    if (visited[nx][ny] || (cx == nx && cy == ny)) continue;
+
+                    visited[nx][ny] = true;
+                    q.add(new int[]{nx, ny});
                 }
             }
         }

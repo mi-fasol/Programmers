@@ -3,68 +3,67 @@ package org.example;
 import java.io.*;
 import java.util.*;
 
-class Solution {
-    static int X, Y;
-    static int CNT = Integer.MAX_VALUE;
-    static int[] dx = {-1, 1, 0, 0};
-    static int[] dy = {0, 0, -1, 1};
-    static char[][] map;
-    static boolean[][] visited;
+public class Main {
+    static int N, M, res = Integer.MAX_VALUE, start, dest;
+    static List<List<int[]>> graph = new ArrayList<>();
+    static StringTokenizer st;
+    static int[] dist;
 
-    public static int solution(String[] board) {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        map = new char[board.length][board[0].length()];
-        visited = new boolean[board.length][board[0].length()];
+        N = Integer.parseInt(br.readLine());
+        M = Integer.parseInt(br.readLine());
 
-        for (int i = 0; i < board.length; i++) {
-            map[i] = board[i].toCharArray();
-            if (board[i].contains("R")) {
-                X = i;
-                Y = board[i].indexOf("R");
-            }
+        dist = new int[N + 1];
+
+        for (int i = 0; i <= N; i++) {
+            graph.add(new ArrayList<>());
+            dist[i] = Integer.MAX_VALUE;
         }
 
-        bfs(X, Y);
+        for (int i = 0; i < M; i++) {
+            st = new StringTokenizer(br.readLine());
+            int a = Integer.parseInt(st.nextToken());
+            int b = Integer.parseInt(st.nextToken());
+            int c = Integer.parseInt(st.nextToken());
 
-        return CNT == Integer.MAX_VALUE ? -1 : CNT;
+            graph.get(a).add(new int[]{b, c});
+        }
+
+        st = new StringTokenizer(br.readLine());
+        start = Integer.parseInt(st.nextToken());
+        dest = Integer.parseInt(st.nextToken());
+
+        daikstra();
+
+        System.out.println(res);
     }
 
-    public static void bfs(int x, int y) {
-        Queue<int[]> q = new LinkedList<>();
-        q.offer(new int[]{x, y});
-        visited[x][y] = true;
-        int cnt = -1;
-        while (!q.isEmpty()) {
-            cnt++;
-            int size = q.size();
+    public static void daikstra() {
+        PriorityQueue<int[]> pq = new PriorityQueue<>((o1, o2) -> o1[1] - o2[1]);
+        pq.offer(new int[]{start, 0});
 
-            for (int j = 0; j < size; j++) {
-                int[] cur = q.poll();
+        dist[start] = 0;
 
-                int cx = cur[0];
-                int cy = cur[1];
+        while (!pq.isEmpty()) {
+            int[] cur = pq.poll();
+            int node = cur[0];
+            int dis = cur[1];
 
-                if (map[cx][cy] == 'G') {
-                    CNT = Math.min(CNT, cnt);
-                    break;
+            if (dist[node] < dis) continue;
+
+            for (int[] next : graph.get(node)) {
+                int nextNode = next[0];
+                int nextDist = dis + next[1];
+
+                if(nextNode == dest) {
+                    res = Math.min(res, nextDist);
                 }
 
-                for (int i = 0; i < 4; i++) {
-                    int nx = cx;
-                    int ny = cy;
-
-                    while (nx >= 0 && ny >= 0 && nx < map.length && ny < map[0].length && map[nx][ny] != 'D') {
-                        nx += dx[i];
-                        ny += dy[i];
-                    }
-
-                    nx -= dx[i];
-                    ny -= dy[i];
-
-                    if (visited[nx][ny] || (cx == nx && cy == ny)) continue;
-
-                    visited[nx][ny] = true;
-                    q.add(new int[]{nx, ny});
+                if (dist[nextNode] > nextDist) {
+                    dist[nextNode] = nextDist;
+                    pq.offer(new int[]{nextNode, nextDist});
                 }
             }
         }
